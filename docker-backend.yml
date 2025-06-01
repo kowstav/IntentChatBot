@@ -1,0 +1,63 @@
+# Dockerfile for FastAPI Backend (main.py)
+
+# 1. Base Image: Use an official Python runtime as a parent image
+FROM python:3.11-slim-buster
+
+# 2. Set Environment Variables
+ENV PYTHONDONTWRITEBYTECODE 1  # Prevents python from writing .pyc files to disc
+ENV PYTHONUNBUFFERED 1      # Prevents python from buffering stdout and stderr
+ENV APP_HOME /app           # Home directory for the application
+
+# Create app directory
+WORKDIR $APP_HOME
+
+# 3. Install system dependencies (if any)
+# For example, if your NLP model or other libraries need system tools:
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     build-essential \
+#     curl \
+#  && rm -rf /var/lib/apt/lists/*
+
+# 4. Install Python dependencies
+# First, copy only the requirements file to leverage Docker cache
+COPY requirements.txt .
+# Consider creating a requirements.txt file with:
+# fastapi
+# uvicorn[standard]
+# torch
+# transformers
+# redis[hiredis]
+# pydantic
+# python-dotenv (optional, if you use .env files)
+# asyncpg (if you were to connect to PostgreSQL directly from Python)
+
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. Copy application code into the container
+COPY ./main.py $APP_HOME/main.py
+# If you have other Python modules or directories, copy them as well
+# COPY ./app_module $APP_HOME/app_module
+
+# 6. Set up Hugging Face Transformers cache (optional but good for CI/CD)
+# You can set the TRANSFORMERS_CACHE environment variable to a path inside the container
+# ENV TRANSFORMERS_CACHE $APP_HOME/.cache/huggingface
+# RUN mkdir -p $TRANSFORMERS_CACHE
+# Note: The model will still be downloaded on first run if not pre-downloaded and copied.
+# For production, you might download the model during the build and copy it into the image.
+# Example for pre-downloading (run this locally, then adjust Dockerfile to COPY):
+# from transformers import AutoTokenizer, AutoModelForSequenceClassification
+# NLP_MODEL_NAME = "distilbert-base-uncased" # Or your actual model
+# tokenizer = AutoTokenizer.from_pretrained(NLP_MODEL_NAME, cache_dir="./hf_cache")
+# model = AutoModelForSequenceClassification.from_pretrained(NLP_MODEL_NAME, cache_dir="./hf_cache")
+# Then in Dockerfile:
+# COPY ./hf_cache $APP_HOME/.cache/huggingface/hub # Adjust path as needed
+
+# 7. Expose port - The port the app runs on
+EXPOSE 8000
+
+# 8. Command to run the application
+# This will run the FastAPI app using Uvicorn.
+# The host 0.0.0.0 makes it accessible from outside the container.
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
