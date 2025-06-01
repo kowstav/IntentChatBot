@@ -1,6 +1,7 @@
 # backend/app/services/ecommerce_api.py
 # Mocked client for interacting with an external e-commerce platform's API.
 import asyncio # For simulating async behavior
+import random # Ensure random is imported at the top level
 
 class MockEcommerceAPI:
     def __init__(self, api_key: str = "test_api_key_from_settings_or_default"):
@@ -47,20 +48,23 @@ class MockEcommerceAPI:
             return {"error": "Order not found for return request.", "order_id": order_id}
 
         item_found_in_order = False
+        item_to_return = None # Store the actual item name from order
         for item in order.get("items", []):
             if item_name_or_sku.lower() in item.lower():
                 item_found_in_order = True
+                item_to_return = item # Use the actual item name for the ticket
                 break
         
         if not item_found_in_order:
             return {"error": f"Item '{item_name_or_sku}' not found in order '{order_id}'.", "order_id": order_id, "item_sku": item_name_or_sku}
 
         # Simulate successful return initiation
-        return_ticket_id = f"RET-{order_id}-{item_name_or_sku[:3].upper()}{random.randint(100,999)}"
+        # Use the found item_to_return for more precise ticket ID if desired, or stick to original query
+        return_ticket_id = f"RET-{order_id}-{item_to_return[:3].upper() if item_to_return else item_name_or_sku[:3].upper()}{random.randint(100,999)}"
         return {
             "return_ticket_id": return_ticket_id,
             "order_id": order_id,
-            "item_returned": item_name_or_sku,
+            "item_returned": item_to_return or item_name_or_sku,
             "status": "Return initiated",
             "message": "Please check your email for a return shipping label and further instructions."
         }
@@ -71,7 +75,7 @@ class MockEcommerceAPI:
         order_details = self._mock_orders.get(order_id)
         if order_details and "error" not in order_details:
             if order_details["status"] == "Shipped":
-                return {"order_id": order_id, "status": "Shipped", "tracking_number": f"1Z{order_id}FAKE TRACK", "estimated_delivery": order_details["estimated_delivery"]}
+                return {"order_id": order_id, "status": "Shipped", "tracking_number": f"1Z{order_id}FAKETRACK", "estimated_delivery": order_details["estimated_delivery"]}
             elif order_details["status"] == "Delivered":
                 return {"order_id": order_id, "status": "Delivered", "delivery_date": order_details["delivery_date"]}
             else:
@@ -80,7 +84,7 @@ class MockEcommerceAPI:
 
 # For direct testing of this module (optional)
 if __name__ == '__main__':
-    import random # Imported here as it's used above now
+    # import random # No longer needed here as it's at the top
     
     async def main():
         mock_api = MockEcommerceAPI()
@@ -96,6 +100,7 @@ if __name__ == '__main__':
         
         print("\n--- Testing Return Request ---")
         print(await mock_api.request_return("12345", "SuperWidget", "Defective item"))
+        print(await mock_api.request_return("12345", "MegaDongle", "Changed my mind"))
         print(await mock_api.request_return("12345", "NonExistentItem", "Wrong item"))
         print(await mock_api.request_return("00000", "SuperWidget", "Order not found"))
 
