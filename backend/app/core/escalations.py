@@ -11,13 +11,7 @@ def create_escalation_ticket(db: Session, conversation_id: int, user_id: str | N
     # First, ensure the conversation exists and mark it as escalated
     db_conversation = db.query(models.Conversation).filter(models.Conversation.id == conversation_id).first()
     if not db_conversation:
-        # Or handle this error more gracefully depending on your application flow
-        # For now, let's assume conversation should exist or be created before escalation
-        # This part might need to be more robust: what if the conversation_id isn't found?
-        # Potentially create a new conversation if one isn't active.
-        # For this example, we'll assume conversation_id is valid and associated with the message.
-        pass # Or raise an error / handle appropriately
-
+        pass
     if db_conversation:
         db_conversation.escalated = True
         db_conversation.end_time = datetime.utcnow() # Or keep it open for agent
@@ -33,7 +27,7 @@ def create_escalation_ticket(db: Session, conversation_id: int, user_id: str | N
     db.commit()
     db.refresh(db_ticket)
     
-    # Here you would also typically push this ticket ID or details to a Redis queue
+    # Here  would also typically push this ticket ID or details to a Redis queue
     # for human agents to pick up.
     # Example (conceptual, actual Redis client usage would be here):
     # print(f"LOG: Pushing ticket {db_ticket.id} for conversation {conversation_id} to Redis.")
@@ -51,7 +45,7 @@ def handle_escalation(message_text: str, user_id: str | None, db: Session, conve
     print(f"Escalation triggered for user '{user_id}' due to message: '{message_text}' in conversation {conversation_id}")
 
     # For simplicity, we'll directly create a ticket here.
-    # In a real app, you might have more complex logic to decide if a new conversation
+    # In a real app,  might have more complex logic to decide if a new conversation
     # needs to be created or an existing one is used.
     
     ticket = create_escalation_ticket(

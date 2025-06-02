@@ -1,13 +1,11 @@
-# backend/app/core/nlp.py
+
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 from typing import Tuple, Dict, Any, List # Added List
 from ..config import settings
-# import numpy as np # numpy wasn't used, can be removed if not needed elsewhere
 
 class IntentClassifier:
     def __init__(self):
-        # Ensure MODEL_NAME is set in your .env and loaded via settings
         self.tokenizer = AutoTokenizer.from_pretrained(settings.MODEL_NAME)
         self.model = AutoModelForSequenceClassification.from_pretrained(
             settings.MODEL_NAME,
@@ -20,7 +18,6 @@ class IntentClassifier:
         
     @staticmethod
     def get_intent_labels() -> List[str]: # Added List type hint
-        # These labels must correspond to the output neurons of your fine-tuned model
         return [
             "track_order",
             "request_return",
@@ -51,12 +48,10 @@ class IntentClassifier:
         intent = self.get_intent_labels()[predicted_class_tensor.item()]
         confidence = confidence_tensor.item()
         
-        # --- Basic Rule-Based Entity Extraction ---
         entities = {}
         text_lower = text.lower()
 
         if intent == "track_order":
-            # Example: Extract a sequence of digits as order_id
             import re
             match = re.search(r'\b(\d{5,})\b', text) # Look for 5 or more digits
             if match:
@@ -68,14 +63,12 @@ class IntentClassifier:
 
         elif intent == "product_info" or intent == "price_query" or intent == "availability":
             # Very basic: assumes product name might be after certain phrases
-            # This needs significant improvement for real-world use (e.g., NER model)
             keywords_to_remove = [
                 "tell me about", "info on", "product info for", "is", "in stock",
                 "how much is", "price of", "availability of", "check if", "available",
                 "the", "a", "an", "for"
             ]
-            # A simple heuristic: find nouns after removing common phrases.
-            # This is very naive.
+
             temp_message = text_lower
             for kw in keywords_to_remove:
                 temp_message = temp_message.replace(kw, "")
@@ -90,12 +83,11 @@ class IntentClassifier:
             match = re.search(r'\b(\d{5,})\b', text)
             if match:
                 entities["order_id"] = match.group(1)
-            # You might also look for item names here if the query is complex
+            #  might also look for item names here if the query is complex
 
         return intent, confidence, entities
 
-# Initialize global classifier (ensure this is done once)
-# Consider lazy loading or ensuring it's loaded at app startup.
+
 try:
     classifier = IntentClassifier()
     print("IntentClassifier initialized successfully.")

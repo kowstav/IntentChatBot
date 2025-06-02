@@ -57,10 +57,10 @@ async def generate_bot_response(
     response_text = f"I'm not sure how to help with that. (Intent: {intent})"
 
     if intent == "greet":
-        response_text = random.choice(["Hello! How can I assist you today?", "Hi there! What can I do for you?", "Hey! How may I help?"])
+        response_text = random.choice(["Hello! How can I assist  today?", "Hi there! What can I do for ?", "Hey! How may I help?"])
     
     elif intent == "goodbye":
-        response_text = random.choice(["Goodbye! Have a great day.", "Thanks for chatting!", "See you later!"])
+        response_text = random.choice(["Goodbye! Have a great day.", "Thanks for chatting!", "See  later!"])
 
     elif intent == "track_order":
         order_id = entities.get("order_id")
@@ -75,7 +75,7 @@ async def generate_bot_response(
             else:
                 response_text = f"Sorry, I couldn't find details for order ID '{order_id}'. {order_details.get('error', 'Please check the ID and try again.')}"
         else:
-            response_text = "I can help you track an order. What is your order ID, please?"
+            response_text = "I can help  track an order. What is the order ID, please?"
 
     elif intent == "product_info":
         product_query = entities.get("product_name_query")
@@ -86,9 +86,9 @@ async def generate_bot_response(
                 if not product_details.get('in_stock') and "Expected restock" in product_details.get('description',''):
                     response_text += f" {product_details.get('description').split('Expected restock:')[1].strip()}"
             else:
-                response_text = f"I couldn't find information about '{product_query}'. Could you be more specific or try a different product name?"
+                response_text = f"I couldn't find information about '{product_query}'. Could  be more specific or try a different product name?"
         else:
-            response_text = "Sure, I can look up product information. Which product are you interested in?"
+            response_text = "Sure, I can look up product information. Which product are  interested in?"
 
     elif intent == "price_query":
         product_query = entities.get("product_name_query")
@@ -97,11 +97,11 @@ async def generate_bot_response(
             if "error" not in product_details and product_details.get('price') is not None:
                 response_text = f"The price for '{product_details.get('name', product_query)}' is ${product_details['price']:.2f}."
             elif "error" not in product_details:
-                 response_text = f"I found info for '{product_details.get('name', product_query)}' but couldn't find specific pricing. You can check its details on the product page."
+                 response_text = f"I found info for '{product_details.get('name', product_query)}' but couldn't find specific pricing.  can check its details on the product page."
             else:
                 response_text = f"I couldn't find pricing for '{product_query}'. Please try another product name."
         else:
-            response_text = "Which product's price are you interested in?"
+            response_text = "Which product's price are  interested in?"
 
     elif intent == "availability":
         product_query = entities.get("product_name_query")
@@ -115,7 +115,7 @@ async def generate_bot_response(
             else:
                 response_text = f"I couldn't check availability for '{product_query}'. Please try another product name."
         else:
-            response_text = "Which product's availability would you like to check?"
+            response_text = "Which product's availability would  like to check?"
             
     elif intent == "request_return":
         order_id = entities.get("order_id")
@@ -123,9 +123,9 @@ async def generate_bot_response(
         item_query = entities.get("item_sku") or entities.get("product_name_query") # More flexible entity check
         
         if not order_id:
-            response_text = "I can help with returns. What is your order ID?"
+            response_text = "I can help with returns. What is the order ID?"
         elif not item_query:
-             response_text = f"For order {order_id}, which item would you like to return? Please provide the item name or SKU."
+             response_text = f"For order {order_id}, which item would  like to return? Please provide the item name or SKU."
         else:
             reason_for_return = f"User requested return for '{item_query}' via chatbot from order {order_id}. Original message: {message_text}"
             return_status = await ecommerce_service.request_return(order_id, item_query, reason_for_return)
@@ -150,19 +150,19 @@ async def generate_bot_response(
                 if shipping_details.get('message'):
                     response_text += f" {shipping_details['message']}"
             else:
-                 response_text = f"I couldn't find shipping info for order {order_id}. {shipping_details.get('error', 'Please check the ID.')} You can also check our general shipping policies on the website."
+                 response_text = f"I couldn't find shipping info for order {order_id}. {shipping_details.get('error', 'Please check the ID.')}  can also check our general shipping policies on the website."
         else:
-            response_text = ("You can ask about shipping for a specific order (please provide the Order ID) "
-                             "or about our general shipping policies (e.g., 'What are your shipping times?').")
+            response_text = (" can ask about shipping for a specific order (please provide the Order ID) "
+                             "or about our general shipping policies (e.g., 'What are the shipping times?').")
 
     elif intent == "human_agent":
-        response_text = "I understand you'd like to speak to a human agent. I'm escalating this for you now."
+        response_text = "I understand 'd like to speak to a human agent. I'm escalating this for  now."
         # Actual escalation is handled by the main endpoint logic
 
     elif intent == "general_query" or intent == "empty_message":
-        response_text = "I'm here to help with orders, products, returns, and shipping. How can I assist you today?"
+        response_text = "I'm here to help with orders, products, returns, and shipping. How can I assist  today?"
         if confidence < 0.3 and intent != "empty_message": 
-            response_text = "I'm not quite sure what you mean. Could you please rephrase your question or ask for 'help'?"
+            response_text = "I'm not quite sure what  mean. Could  please rephrase the question or ask for 'help'?"
 
     return response_text
 
@@ -206,7 +206,7 @@ async def http_chat_endpoint(
 
     if confidence < settings.CONFIDENCE_THRESHOLD or intent == "human_agent":
         ticket = handle_escalation(payload.text, payload.user_id, db, conversation_id=active_conversation.id)
-        bot_response_text = f"I'm not quite sure how to best assist with that, or you've requested help. I'm connecting you to a human agent. Your Ticket ID is: {ticket.id}"
+        bot_response_text = f"I'm not quite sure how to best assist with that, or 've requested help. I'm connecting  to a human agent. the Ticket ID is: {ticket.id}"
         response_payload["response"] = bot_response_text
         response_payload["requires_human_escalation"] = True
         response_payload["escalation_ticket_id"] = ticket.id
@@ -219,7 +219,6 @@ async def http_chat_endpoint(
     
     return response_payload
 
-# Keep track of active WebSocket connections (conversation_id -> List[WebSocket])
 # One conversation can have multiple client connections (e.g. user refreshes tab)
 active_connections: Dict[int, List[WebSocket]] = {} 
 
@@ -249,7 +248,7 @@ async def websocket_chat_endpoint(
         while True:
             data = await websocket.receive_json()
             user_text = data.get("text")
-            client_conversation_id = data.get("conversation_id") # Client might send this
+            client_conversation_id = data.get("conversation_id")
 
             if not user_text:
                 await websocket.send_json({"error": "Text input cannot be empty", "conversation_id": conversation_id})
@@ -282,7 +281,7 @@ async def websocket_chat_endpoint(
 
             if confidence < settings.CONFIDENCE_THRESHOLD or intent == "human_agent":
                 ticket = handle_escalation(user_text, user_id, db, conversation_id=current_processing_conv_id)
-                bot_response_text = f"Connecting you to a human agent. Your Ticket ID: {ticket.id}"
+                bot_response_text = f"Connecting  to a human agent. the Ticket ID: {ticket.id}"
                 response_data["response"] = bot_response_text
                 response_data["requires_human_escalation"] = True
                 response_data["escalation_ticket_id"] = ticket.id
@@ -297,34 +296,16 @@ async def websocket_chat_endpoint(
 
     except WebSocketDisconnect:
         print(f"WebSocket disconnected for conversation_id: {conversation_id}")
-        # Optionally mark conversation as ended if desired, or leave it open
-        # db_conv = db.query(models.Conversation).filter(models.Conversation.id == conversation_id).first()
-        # if db_conv and not db_conv.end_time and not active_connections[conversation_id]: # Only end if no other connections
-        #     db_conv.end_time = datetime.utcnow()
-        #     db.commit()
     except Exception as e:
         print(f"Error in WebSocket for conversation {conversation_id}: {type(e).__name__} - {e}")
         try:
             await websocket.send_json({"error": str(e), "type": "error", "conversation_id": conversation_id})
-        except Exception as send_e: # If sending fails too
+        except Exception as send_e:
             print(f"Failed to send error to WebSocket: {send_e}")
             pass 
     finally:
         if conversation_id in active_connections:
             active_connections[conversation_id].remove(websocket)
-            if not active_connections[conversation_id]: # If list is empty
+            if not active_connections[conversation_id]:
                 del active_connections[conversation_id]
         print(f"Cleaned up WebSocket connection for conversation_id: {conversation_id}. Remaining for convo: {len(active_connections.get(conversation_id, []))}")
-
-# You should define ChatResponse in your schemas.py if it's not already there for the HTTP endpoint
-# Example in schemas.py:
-# class ChatResponse(BaseModel):
-#     conversation_id: int
-#     user_message_id: int
-#     intent: Optional[str]
-#     confidence: Optional[float]
-#     entities: Dict[str, Any]
-#     requires_human_escalation: bool
-#     response: str
-#     bot_message_id: Optional[int] = None
-#     escalation_ticket_id: Optional[int] = None
